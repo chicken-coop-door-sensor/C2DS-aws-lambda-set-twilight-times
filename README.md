@@ -1,2 +1,2 @@
-# CDS-aws-get-twilight-times-lambda
+# CDS-aws-get-local-twilight-times-lambda
 Get sunrise/sunset times 
