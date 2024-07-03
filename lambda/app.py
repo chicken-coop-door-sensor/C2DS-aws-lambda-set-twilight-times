@@ -118,17 +118,17 @@ def get_local_twilight_times(latitude, longitude):
     if not sunrise_utc or not sunset_utc:
         raise ValueError("Sunrise or sunset time not found in the response")
 
-    print(f"Sunrise UTC: {sunrise_utc}, Sunset UTC: {sunset_utc}")
+    print(f"Timezone: {timezone} Sunrise UTC: {sunrise_utc}, Sunset UTC: {sunset_utc}")
 
-    local_timezone = pytz.timezone(timezone)
+    timezone_local = pytz.timezone(timezone)
 
-    today_local = datetime.now(local_timezone).date().isoformat()
+    today_local = datetime.now(timezone_local).date().isoformat()
     sunrise_local = convert_utc_to_local(sunrise_utc, timezone)
     sunset_local = convert_utc_to_local(sunset_utc, timezone)
 
-    print(f"Today local: {today_local} Sunrise local: {sunrise_local}, Sunset local: {sunset_local}")
+    print(f"Local - Timezone: {timezone} Date: {today_local} Sunrise: {sunrise_local}, Sunset: {sunset_local}")
 
-    return today_local, sunrise_local, sunset_local
+    return timezone, today_local, sunrise_local, sunset_local
 
 
 def lambda_handler(event, context):
@@ -150,12 +150,13 @@ def lambda_handler(event, context):
     table = dynamodb.Table(ddb_table_name)
 
     try:
-        today, sunrise, sunset = get_local_twilight_times(latitude, longitude)
+        timezone, today, sunrise, sunset = get_local_twilight_times(latitude, longitude)
 
         # Put item in the DynamoDB table, replacing the existing item with the same 'primary_key'
         table.put_item(
             Item={
                 'primary_key': 'twilight',  # Fixed primary key to ensure single entry
+                'timezone': timezone,
                 'date': today,
                 'sunrise': sunrise,
                 'sunset': sunset
